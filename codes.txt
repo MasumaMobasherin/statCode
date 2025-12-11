@@ -1,0 +1,1086 @@
+import pandas as pd
+import numpy as np
+
+# Load the mental health dataset
+df = pd.read_csv("/kaggle/input/mental-health1/Mental Health Dataset.csv")
+
+# Create comprehensive summary
+summary_data = []
+
+# Basic info
+summary_data.append(['Total Records', len(df)])
+summary_data.append(['Total Features', len(df.columns)])
+summary_data.append(['', ''])
+
+# Gender Distribution
+summary_data.append(['GENDER DISTRIBUTION', ''])
+gender_counts = df['Gender'].value_counts()
+for gender, count in gender_counts.items():
+    summary_data.append([f'  {gender}', f'{count} ({count/len(df)*100:.1f}%)'])
+summary_data.append(['', ''])
+
+# Treatment Status
+summary_data.append(['TREATMENT STATUS', ''])
+treatment_counts = df['treatment'].value_counts()
+for status, count in treatment_counts.items():
+    summary_data.append([f'  {status}', f'{count} ({count/len(df)*100:.1f}%)'])
+summary_data.append(['', ''])
+
+# Growing Stress
+summary_data.append(['GROWING STRESS', ''])
+stress_counts = df['Growing_Stress'].value_counts()
+for status, count in stress_counts.items():
+    summary_data.append([f'  {status}', f'{count} ({count/len(df)*100:.1f}%)'])
+summary_data.append(['', ''])
+
+# Family History
+summary_data.append(['FAMILY HISTORY', ''])
+family_counts = df['family_history'].value_counts()
+for status, count in family_counts.items():
+    summary_data.append([f'  {status}', f'{count} ({count/len(df)*100:.1f}%)'])
+summary_data.append(['', ''])
+
+# Mood Swings
+summary_data.append(['MOOD SWINGS LEVEL', ''])
+mood_counts = df['Mood_Swings'].value_counts()
+for level, count in mood_counts.items():
+    summary_data.append([f'  {level}', f'{count} ({count/len(df)*100:.1f}%)'])
+summary_data.append(['', ''])
+
+# Top 10 Countries
+summary_data.append(['TOP 10 COUNTRIES', ''])
+top_countries = df['Country'].value_counts().head(10)
+for country, count in top_countries.items():
+    summary_data.append([f'  {country}', f'{count} ({count/len(df)*100:.1f}%)'])
+
+# Convert to DataFrame
+summary_df = pd.DataFrame(summary_data, columns=['Metric', 'Value'])
+summary_df
+Metric	Value
+0	Total Records	292364
+1	Total Features	17
+2		
+3	GENDER DISTRIBUTION	
+4	Male	239850 (82.0%)
+5	Female	52514 (18.0%)
+6		
+7	TREATMENT STATUS	
+8	Yes	147606 (50.5%)
+9	No	144758 (49.5%)
+10		
+11	GROWING STRESS	
+12	Maybe	99985 (34.2%)
+13	Yes	99653 (34.1%)
+14	No	92726 (31.7%)
+15		
+16	FAMILY HISTORY	
+17	No	176832 (60.5%)
+18	Yes	115532 (39.5%)
+19		
+20	MOOD SWINGS LEVEL	
+21	Medium	101064 (34.6%)
+22	Low	99834 (34.1%)
+23	High	91466 (31.3%)
+24		
+25	TOP 10 COUNTRIES	
+26	United States	171308 (58.6%)
+27	United Kingdom	51404 (17.6%)
+28	Canada	18726 (6.4%)
+29	Australia	6026 (2.1%)
+30	Netherlands	5894 (2.0%)
+31	Ireland	5548 (1.9%)
+32	Germany	4680 (1.6%)
+33	Sweden	2818 (1.0%)
+34	India	2774 (0.9%)
+35	France	2340 (0.8%)
+import os
+import pandas as pd
+import plotly.graph_objects as go
+from plotly.subplots import make_subplots
+
+# --- Load dataset safely ---
+folder = "/kaggle/input/mental-health1"
+files = os.listdir(folder)
+
+csv_file = [f for f in files if f.lower().endswith(".csv")][0]
+print("Loaded file:", csv_file)
+
+df = pd.read_csv(f"{folder}/{csv_file}")
+
+# --- Create subplots ---
+fig = make_subplots(
+    rows=1, cols=2,
+    subplot_titles=('Gender Distribution', 'Treatment Status'),
+    specs=[[{'type':'pie'}, {'type':'pie'}]]
+)
+
+# Gender distribution
+gender_counts = df['Gender'].value_counts()
+fig.add_trace(
+    go.Pie(labels=gender_counts.index, values=gender_counts.values,
+           marker=dict(colors=['#3498db', '#e74c3c'])),
+    row=1, col=1
+)
+
+# Treatment status
+treatment_counts = df['treatment'].value_counts()
+fig.add_trace(
+    go.Pie(labels=treatment_counts.index, values=treatment_counts.values,
+           marker=dict(colors=['#2ecc71', '#e67e22', '#95a5a6'])),
+    row=1, col=2
+)
+
+fig.update_layout(
+    title_text='Mental Health Survey: Gender & Treatment Overview',
+    height=500,
+    showlegend=True
+)
+
+fig.show()
+Loaded file: Mental Health Dataset.csv
+import pandas as pd
+import plotly.graph_objects as go
+
+# Load dataset correctly
+df = pd.read_csv("/kaggle/input/mental-health1/Mental Health Dataset.csv")
+
+# Create stress analysis by gender
+stress_gender = pd.crosstab(df['Gender'], df['Growing_Stress'], normalize='index') * 100
+
+fig = go.Figure()
+
+for stress_level in stress_gender.columns:
+    fig.add_trace(go.Bar(
+        name=stress_level,
+        x=stress_gender.index,
+        y=stress_gender[stress_level],
+        text=stress_gender[stress_level].round(1),
+        texttemplate='%{text}%',
+        textposition='inside'
+    ))
+
+fig.update_layout(
+    title='Growing Stress Levels by Gender',
+    xaxis_title='Gender',
+    yaxis_title='Percentage (%)',
+    barmode='stack',
+    height=500,
+    plot_bgcolor='white',
+    showlegend=True
+)
+
+fig.show()
+plt.show()
+import pandas as pd
+import plotly.graph_objects as go
+import os
+
+# --- Correct way to load the dataset in Kaggle ---
+
+folder = "/kaggle/input/mental-health1"
+files = os.listdir(folder)
+
+# Automatically detect the CSV file
+csv_file = [f for f in files if f.lower().endswith(".csv")][0]
+print("Loaded file:", csv_file)
+
+df = pd.read_csv(f"{folder}/{csv_file}")
+
+# --- Family history vs treatment ---
+family_treatment = pd.crosstab(df['family_history'], df['treatment'], normalize='index') * 100
+
+fig = go.Figure()
+
+for treatment in family_treatment.columns:
+    fig.add_trace(go.Bar(
+        name=f'Treatment: {treatment}',
+        x=family_treatment.index,
+        y=family_treatment[treatment],
+        text=family_treatment[treatment].round(1),
+        texttemplate='%{text}%',
+        textposition='inside'
+    ))
+
+fig.update_layout(
+    title='Mental Health Treatment by Family History',
+    xaxis_title='Family History of Mental Health Issues',
+    yaxis_title='Percentage (%)',
+    barmode='group',
+    height=500,
+    plot_bgcolor='white',
+    showlegend=True
+)
+
+fig.show()
+plt.show()
+Loaded file: Mental Health Dataset.csv
+import pandas as pd
+import plotly.express as px
+
+# Load data
+folder = "/kaggle/input/mental-health1"
+files = os.listdir(folder)
+
+# Get top 8 occupations
+top_occupations = df['Occupation'].value_counts().head(8).index
+df_filtered = df[df['Occupation'].isin(top_occupations)]
+
+# Mood swings by occupation
+mood_occupation = pd.crosstab(df_filtered['Occupation'], df_filtered['Mood_Swings'], normalize='index') * 100
+mood_occupation = mood_occupation.reset_index()
+
+# Melt for plotting
+mood_melted = mood_occupation.melt(id_vars='Occupation', var_name='Mood_Swing_Level', value_name='Percentage')
+
+fig = px.bar(mood_melted, 
+             x='Occupation', 
+             y='Percentage',
+             color='Mood_Swing_Level',
+             title='Mood Swings Distribution by Top 8 Occupations',
+             barmode='stack',
+             color_discrete_map={'Low': '#2ecc71', 'Medium': '#f39c12', 'High': '#e74c3c'})
+
+fig.update_layout(
+    xaxis_title='Occupation',
+    yaxis_title='Percentage (%)',
+    height=500,
+    plot_bgcolor='white',
+    xaxis_tickangle=-45
+)
+
+fig.show()
+plt.show()
+import pandas as pd
+import numpy as np
+
+# Load the dataset
+folder = "/kaggle/input/mental-health1"
+files = os.listdir(folder)
+
+# Set sample size
+sample_size = 1000
+
+summary_data = []
+summary_data.append(['SAMPLING METHODS SUMMARY', ''])
+summary_data.append(['Original Dataset Size', len(df)])
+summary_data.append(['Target Sample Size', sample_size])
+summary_data.append(['', ''])
+
+# 1. SIMPLE RANDOM SAMPLING
+simple_random = df.sample(n=sample_size, random_state=42)
+summary_data.append(['1. SIMPLE RANDOM SAMPLING', ''])
+summary_data.append(['  Sample Size', len(simple_random)])
+summary_data.append(['  Male %', f"{(simple_random['Gender']=='Male').sum()/len(simple_random)*100:.1f}%"])
+summary_data.append(['  Female %', f"{(simple_random['Gender']=='Female').sum()/len(simple_random)*100:.1f}%"])
+summary_data.append(['  Treatment Yes %', f"{(simple_random['treatment']=='Yes').sum()/len(simple_random)*100:.1f}%"])
+summary_data.append(['', ''])
+
+# 2. STRATIFIED SAMPLING (by Gender)
+stratified_gender = df.groupby('Gender', group_keys=False).apply(
+    lambda x: x.sample(n=int(sample_size * len(x) / len(df)), random_state=42)
+)
+summary_data.append(['2. STRATIFIED SAMPLING (Gender)', ''])
+summary_data.append(['  Sample Size', len(stratified_gender)])
+summary_data.append(['  Male %', f"{(stratified_gender['Gender']=='Male').sum()/len(stratified_gender)*100:.1f}%"])
+summary_data.append(['  Female %', f"{(stratified_gender['Gender']=='Female').sum()/len(stratified_gender)*100:.1f}%"])
+summary_data.append(['  Treatment Yes %', f"{(stratified_gender['treatment']=='Yes').sum()/len(stratified_gender)*100:.1f}%"])
+summary_data.append(['', ''])
+
+# 3. STRATIFIED SAMPLING (by Treatment Status)
+stratified_treatment = df.groupby('treatment', group_keys=False).apply(
+    lambda x: x.sample(n=int(sample_size * len(x) / len(df)), random_state=42)
+)
+summary_data.append(['3. STRATIFIED SAMPLING (Treatment)', ''])
+summary_data.append(['  Sample Size', len(stratified_treatment)])
+summary_data.append(['  Male %', f"{(stratified_treatment['Gender']=='Male').sum()/len(stratified_treatment)*100:.1f}%"])
+summary_data.append(['  Female %', f"{(stratified_treatment['Gender']=='Female').sum()/len(stratified_treatment)*100:.1f}%"])
+summary_data.append(['  Treatment Yes %', f"{(stratified_treatment['treatment']=='Yes').sum()/len(stratified_treatment)*100:.1f}%"])
+summary_data.append(['', ''])
+
+# 4. SYSTEMATIC SAMPLING
+step = len(df) // sample_size
+systematic_sample = df.iloc[::step].head(sample_size)
+summary_data.append(['4. SYSTEMATIC SAMPLING', ''])
+summary_data.append(['  Sample Size', len(systematic_sample)])
+summary_data.append(['  Sampling Interval', step])
+summary_data.append(['  Male %', f"{(systematic_sample['Gender']=='Male').sum()/len(systematic_sample)*100:.1f}%"])
+summary_data.append(['  Female %', f"{(systematic_sample['Gender']=='Female').sum()/len(systematic_sample)*100:.1f}%"])
+summary_data.append(['  Treatment Yes %', f"{(systematic_sample['treatment']=='Yes').sum()/len(systematic_sample)*100:.1f}%"])
+summary_data.append(['', ''])
+
+# 5. CLUSTER SAMPLING (by Country)
+# Select random countries and take all their data
+countries = df['Country'].unique()
+num_clusters = 5
+selected_countries = np.random.choice(countries, size=num_clusters, replace=False)
+cluster_sample = df[df['Country'].isin(selected_countries)].sample(n=min(sample_size, len(df[df['Country'].isin(selected_countries)])), random_state=42)
+summary_data.append(['5. CLUSTER SAMPLING (Countries)', ''])
+summary_data.append(['  Selected Clusters', ', '.join(selected_countries[:3]) + '...'])
+summary_data.append(['  Sample Size', len(cluster_sample)])
+summary_data.append(['  Male %', f"{(cluster_sample['Gender']=='Male').sum()/len(cluster_sample)*100:.1f}%"])
+summary_data.append(['  Female %', f"{(cluster_sample['Gender']=='Female').sum()/len(cluster_sample)*100:.1f}%"])
+summary_data.append(['  Treatment Yes %', f"{(cluster_sample['treatment']=='Yes').sum()/len(cluster_sample)*100:.1f}%"])
+summary_data.append(['', ''])
+
+# 6. BOOTSTRAP SAMPLING
+bootstrap_sample = df.sample(n=sample_size, replace=True, random_state=42)
+summary_data.append(['6. BOOTSTRAP SAMPLING', ''])
+summary_data.append(['  Sample Size', len(bootstrap_sample)])
+summary_data.append(['  Unique Records', bootstrap_sample.drop_duplicates().shape[0]])
+summary_data.append(['  Male %', f"{(bootstrap_sample['Gender']=='Male').sum()/len(bootstrap_sample)*100:.1f}%"])
+summary_data.append(['  Female %', f"{(bootstrap_sample['Gender']=='Female').sum()/len(bootstrap_sample)*100:.1f}%"])
+summary_data.append(['  Treatment Yes %', f"{(bootstrap_sample['treatment']=='Yes').sum()/len(bootstrap_sample)*100:.1f}%"])
+
+# Convert to DataFrame
+summary_df = pd.DataFrame(summary_data, columns=['Sampling Method', 'Details'])
+summary_df
+/tmp/ipykernel_47/2839524110.py:27: DeprecationWarning:
+
+DataFrameGroupBy.apply operated on the grouping columns. This behavior is deprecated, and in a future version of pandas the grouping columns will be excluded from the operation. Either pass `include_groups=False` to exclude the groupings or explicitly select the grouping columns after groupby to silence this warning.
+
+/tmp/ipykernel_47/2839524110.py:38: DeprecationWarning:
+
+DataFrameGroupBy.apply operated on the grouping columns. This behavior is deprecated, and in a future version of pandas the grouping columns will be excluded from the operation. Either pass `include_groups=False` to exclude the groupings or explicitly select the grouping columns after groupby to silence this warning.
+
+Sampling Method	Details
+0	SAMPLING METHODS SUMMARY	
+1	Original Dataset Size	292364
+2	Target Sample Size	1000
+3		
+4	1. SIMPLE RANDOM SAMPLING	
+5	Sample Size	1000
+6	Male %	83.8%
+7	Female %	16.2%
+8	Treatment Yes %	49.1%
+9		
+10	2. STRATIFIED SAMPLING (Gender)	
+11	Sample Size	999
+12	Male %	82.1%
+13	Female %	17.9%
+14	Treatment Yes %	51.2%
+15		
+16	3. STRATIFIED SAMPLING (Treatment)	
+17	Sample Size	999
+18	Male %	82.7%
+19	Female %	17.3%
+20	Treatment Yes %	50.5%
+21		
+22	4. SYSTEMATIC SAMPLING	
+23	Sample Size	1000
+24	Sampling Interval	292
+25	Male %	82.0%
+26	Female %	18.0%
+27	Treatment Yes %	51.5%
+28		
+29	5. CLUSTER SAMPLING (Countries)	
+30	Selected Clusters	Georgia, Australia, Mexico...
+31	Sample Size	1000
+32	Male %	76.9%
+33	Female %	23.1%
+34	Treatment Yes %	43.3%
+35		
+36	6. BOOTSTRAP SAMPLING	
+37	Sample Size	1000
+38	Unique Records	999
+39	Male %	81.0%
+40	Female %	19.0%
+41	Treatment Yes %	51.2%
+import pandas as pd
+import numpy as np
+import plotly.graph_objects as go
+
+# Load the dataset
+folder = "/kaggle/input/mental-health1"
+files = os.listdir(folder)
+
+sample_size = 1000
+
+# Perform all sampling methods
+samples = {}
+
+# 1. Simple Random
+samples['Simple Random'] = df.sample(n=sample_size, random_state=42)
+
+# 2. Stratified (Gender)
+samples['Stratified (Gender)'] = df.groupby('Gender', group_keys=False).apply(
+    lambda x: x.sample(n=int(sample_size * len(x) / len(df)), random_state=42)
+)
+
+# 3. Stratified (Treatment)
+samples['Stratified (Treatment)'] = df.groupby('treatment', group_keys=False).apply(
+    lambda x: x.sample(n=int(sample_size * len(x) / len(df)), random_state=42)
+)
+
+# 4. Systematic
+step = len(df) // sample_size
+samples['Systematic'] = df.iloc[::step].head(sample_size)
+
+# 5. Cluster
+countries = df['Country'].unique()
+selected_countries = np.random.choice(countries, size=5, replace=False)
+samples['Cluster (Country)'] = df[df['Country'].isin(selected_countries)].sample(n=min(sample_size, len(df[df['Country'].isin(selected_countries)])), random_state=42)
+
+# 6. Bootstrap
+samples['Bootstrap'] = df.sample(n=sample_size, replace=True, random_state=42)
+
+# Calculate metrics for each method
+methods = []
+male_pct = []
+treatment_yes_pct = []
+
+for method, sample in samples.items():
+    methods.append(method)
+    male_pct.append((sample['Gender']=='Male').sum()/len(sample)*100)
+    treatment_yes_pct.append((sample['treatment']=='Yes').sum()/len(sample)*100)
+
+# Create comparison chart
+fig = go.Figure()
+
+fig.add_trace(go.Bar(
+    name='Male %',
+    x=methods,
+    y=male_pct,
+    marker_color='#3498db',
+    text=[f'{val:.1f}%' for val in male_pct],
+    textposition='outside'
+))
+
+fig.add_trace(go.Bar(
+    name='Treatment Yes %',
+    x=methods,
+    y=treatment_yes_pct,
+    marker_color='#2ecc71',
+    text=[f'{val:.1f}%' for val in treatment_yes_pct],
+    textposition='outside'
+))
+
+fig.update_layout(
+    title='Comparison of Sampling Methods: Gender & Treatment Distribution',
+    xaxis_title='Sampling Method',
+    yaxis_title='Percentage (%)',
+    barmode='group',
+    height=500,
+    plot_bgcolor='white',
+    xaxis_tickangle=-45,
+    showlegend=True
+)
+
+fig.show()
+plt.show()
+/tmp/ipykernel_47/3713879160.py:18: DeprecationWarning:
+
+DataFrameGroupBy.apply operated on the grouping columns. This behavior is deprecated, and in a future version of pandas the grouping columns will be excluded from the operation. Either pass `include_groups=False` to exclude the groupings or explicitly select the grouping columns after groupby to silence this warning.
+
+/tmp/ipykernel_47/3713879160.py:23: DeprecationWarning:
+
+DataFrameGroupBy.apply operated on the grouping columns. This behavior is deprecated, and in a future version of pandas the grouping columns will be excluded from the operation. Either pass `include_groups=False` to exclude the groupings or explicitly select the grouping columns after groupby to silence this warning.
+
+import pandas as pd
+import numpy as np
+
+# Load the dataset
+folder = "/kaggle/input/mental-health1"
+files = os.listdir(folder)
+
+# Function to create frequency distribution
+def create_freq_dist(column_name):
+    freq = df[column_name].value_counts().sort_index()
+    total = len(df)
+    
+    freq_data = []
+    for value, count in freq.items():
+        percentage = (count / total) * 100
+        freq_data.append([value, count, f"{percentage:.2f}%"])
+    
+    # Add total
+    freq_data.append(['TOTAL', total, '100.00%'])
+    
+    return freq_data
+
+# Create comprehensive frequency distribution table
+all_freq_data = []
+
+# Header
+all_freq_data.append(['FREQUENCY DISTRIBUTION TABLE', '', ''])
+all_freq_data.append(['Variable: Category', 'Frequency', 'Percentage'])
+all_freq_data.append(['', '', ''])
+
+# 1. Gender
+all_freq_data.append(['GENDER', '', ''])
+for row in create_freq_dist('Gender'):
+    all_freq_data.append([f'  {row[0]}', row[1], row[2]])
+all_freq_data.append(['', '', ''])
+
+# 2. Treatment
+all_freq_data.append(['TREATMENT', '', ''])
+for row in create_freq_dist('treatment'):
+    all_freq_data.append([f'  {row[0]}', row[1], row[2]])
+all_freq_data.append(['', '', ''])
+
+# 3. Growing Stress
+all_freq_data.append(['GROWING STRESS', '', ''])
+for row in create_freq_dist('Growing_Stress'):
+    all_freq_data.append([f'  {row[0]}', row[1], row[2]])
+all_freq_data.append(['', '', ''])
+
+# 4. Family History
+all_freq_data.append(['FAMILY HISTORY', '', ''])
+for row in create_freq_dist('family_history'):
+    all_freq_data.append([f'  {row[0]}', row[1], row[2]])
+all_freq_data.append(['', '', ''])
+
+# 5. Mood Swings
+all_freq_data.append(['MOOD SWINGS', '', ''])
+for row in create_freq_dist('Mood_Swings'):
+    all_freq_data.append([f'  {row[0]}', row[1], row[2]])
+all_freq_data.append(['', '', ''])
+
+# 6. Days Indoors
+all_freq_data.append(['DAYS INDOORS', '', ''])
+for row in create_freq_dist('Days_Indoors'):
+    all_freq_data.append([f'  {row[0]}', row[1], row[2]])
+all_freq_data.append(['', '', ''])
+
+# 7. Changes in Habits
+all_freq_data.append(['CHANGES IN HABITS', '', ''])
+for row in create_freq_dist('Changes_Habits'):
+    all_freq_data.append([f'  {row[0]}', row[1], row[2]])
+all_freq_data.append(['', '', ''])
+
+# 8. Mental Health History
+all_freq_data.append(['MENTAL HEALTH HISTORY', '', ''])
+for row in create_freq_dist('Mental_Health_History'):
+    all_freq_data.append([f'  {row[0]}', row[1], row[2]])
+all_freq_data.append(['', '', ''])
+
+# 9. Coping Struggles
+all_freq_data.append(['COPING STRUGGLES', '', ''])
+for row in create_freq_dist('Coping_Struggles'):
+    all_freq_data.append([f'  {row[0]}', row[1], row[2]])
+all_freq_data.append(['', '', ''])
+
+# 10. Work Interest
+all_freq_data.append(['WORK INTEREST', '', ''])
+for row in create_freq_dist('Work_Interest'):
+    all_freq_data.append([f'  {row[0]}', row[1], row[2]])
+all_freq_data.append(['', '', ''])
+
+# 11. Social Weakness
+all_freq_data.append(['SOCIAL WEAKNESS', '', ''])
+for row in create_freq_dist('Social_Weakness'):
+    all_freq_data.append([f'  {row[0]}', row[1], row[2]])
+all_freq_data.append(['', '', ''])
+
+# 12. Mental Health Interview
+all_freq_data.append(['MENTAL HEALTH INTERVIEW', '', ''])
+for row in create_freq_dist('mental_health_interview'):
+    all_freq_data.append([f'  {row[0]}', row[1], row[2]])
+all_freq_data.append(['', '', ''])
+
+# 13. Care Options
+all_freq_data.append(['CARE OPTIONS', '', ''])
+for row in create_freq_dist('care_options'):
+    all_freq_data.append([f'  {row[0]}', row[1], row[2]])
+all_freq_data.append(['', '', ''])
+
+# 14. Self Employed
+all_freq_data.append(['SELF EMPLOYED', '', ''])
+for row in create_freq_dist('self_employed'):
+    all_freq_data.append([f'  {row[0]}', row[1], row[2]])
+all_freq_data.append(['', '', ''])
+
+# 15. Top 15 Occupations
+all_freq_data.append(['TOP 15 OCCUPATIONS', '', ''])
+top_occupations = df['Occupation'].value_counts().head(15)
+for occupation, count in top_occupations.items():
+    percentage = (count / len(df)) * 100
+    all_freq_data.append([f'  {occupation}', count, f"{percentage:.2f}%"])
+all_freq_data.append(['', '', ''])
+
+# 16. Top 15 Countries
+all_freq_data.append(['TOP 15 COUNTRIES', '', ''])
+top_countries = df['Country'].value_counts().head(15)
+for country, count in top_countries.items():
+    percentage = (count / len(df)) * 100
+    all_freq_data.append([f'  {country}', count, f"{percentage:.2f}%"])
+
+# Convert to DataFrame
+freq_dist_df = pd.DataFrame(all_freq_data, columns=['Category', 'Frequency', 'Percentage'])
+freq_dist_df
+Category	Frequency	Percentage
+0	FREQUENCY DISTRIBUTION TABLE		
+1	Variable: Category	Frequency	Percentage
+2			
+3	GENDER		
+4	Female	52514	17.96%
+...	...	...	...
+102	Brazil	2340	0.80%
+103	New Zealand	1994	0.68%
+104	South Africa	1994	0.68%
+105	Switzerland	1560	0.53%
+106	Israel	1560	0.53%
+107 rows × 3 columns
+
+import pandas as pd
+import plotly.graph_objects as go
+from plotly.subplots import make_subplots
+
+# Load data
+folder = "/kaggle/input/mental-health1"
+files = os.listdir(folder)
+
+# Create subplots for multiple frequency distributions
+fig = make_subplots(
+    rows=2, cols=2,
+    subplot_titles=('Treatment Status', 'Growing Stress', 'Mood Swings', 'Family History'),
+    specs=[[{'type':'bar'}, {'type':'bar'}],
+           [{'type':'bar'}, {'type':'bar'}]]
+)
+
+# 1. Treatment Status
+treatment_freq = df['treatment'].value_counts()
+fig.add_trace(
+    go.Bar(x=treatment_freq.index, y=treatment_freq.values,
+           marker_color='#3498db', text=treatment_freq.values,
+           textposition='outside'),
+    row=1, col=1
+)
+
+# 2. Growing Stress
+stress_freq = df['Growing_Stress'].value_counts()
+fig.add_trace(
+    go.Bar(x=stress_freq.index, y=stress_freq.values,
+           marker_color='#e74c3c', text=stress_freq.values,
+           textposition='outside'),
+    row=1, col=2
+)
+
+# 3. Mood Swings
+mood_freq = df['Mood_Swings'].value_counts().sort_index()
+colors_mood = {'Low': '#2ecc71', 'Medium': '#f39c12', 'High': '#e74c3c'}
+fig.add_trace(
+    go.Bar(x=mood_freq.index, y=mood_freq.values,
+           marker_color=[colors_mood[x] for x in mood_freq.index],
+           text=mood_freq.values, textposition='outside'),
+    row=2, col=1
+)
+
+# 4. Family History
+family_freq = df['family_history'].value_counts()
+fig.add_trace(
+    go.Bar(x=family_freq.index, y=family_freq.values,
+           marker_color='#9b59b6', text=family_freq.values,
+           textposition='outside'),
+    row=2, col=2
+)
+
+fig.update_layout(
+    title_text='Key Mental Health Indicators - Frequency Distributions',
+    showlegend=False,
+    height=700,
+    plot_bgcolor='white'
+)
+
+fig.update_xaxes(showgrid=False)
+fig.update_yaxes(showgrid=True, gridcolor='lightgray')
+
+fig.show()
+plt.show()
+import pandas as pd
+import plotly.graph_objects as go
+from plotly.subplots import make_subplots
+
+# Load data
+folder = "/kaggle/input/mental-health1"
+files = os.listdir(folder)
+
+# Create subplots for behavioral indicators
+fig = make_subplots(
+    rows=2, cols=2,
+    subplot_titles=('Social Weakness', 'Work Interest', 'Coping Struggles', 'Changes in Habits'),
+    specs=[[{'type':'bar'}, {'type':'bar'}],
+           [{'type':'bar'}, {'type':'bar'}]]
+)
+
+# 1. Social Weakness
+social_freq = df['Social_Weakness'].value_counts()
+fig.add_trace(
+    go.Bar(x=social_freq.index, y=social_freq.values,
+           marker_color='#e67e22', text=social_freq.values,
+           textposition='outside'),
+    row=1, col=1
+)
+
+# 2. Work Interest
+work_freq = df['Work_Interest'].value_counts()
+fig.add_trace(
+    go.Bar(x=work_freq.index, y=work_freq.values,
+           marker_color='#1abc9c', text=work_freq.values,
+           textposition='outside'),
+    row=1, col=2
+)
+
+# 3. Coping Struggles
+coping_freq = df['Coping_Struggles'].value_counts()
+fig.add_trace(
+    go.Bar(x=coping_freq.index, y=coping_freq.values,
+           marker_color='#34495e', text=coping_freq.values,
+           textposition='outside'),
+    row=2, col=1
+)
+
+# 4. Changes in Habits
+habits_freq = df['Changes_Habits'].value_counts()
+fig.add_trace(
+    go.Bar(x=habits_freq.index, y=habits_freq.values,
+           marker_color='#16a085', text=habits_freq.values,
+           textposition='outside'),
+    row=2, col=2
+)
+
+fig.update_layout(
+    title_text='Behavioral Mental Health Indicators - Frequency Distributions',
+    showlegend=False,
+    height=700,
+    plot_bgcolor='white'
+)
+
+fig.update_xaxes(showgrid=False)
+fig.update_yaxes(showgrid=True, gridcolor='lightgray')
+
+fig.show()
+plt.show()
+import pandas as pd
+import plotly.graph_objects as go
+from plotly.subplots import make_subplots
+
+# Load data
+folder = "/kaggle/input/mental-health1"
+files = os.listdir(folder)
+
+# Create subplots for occupation and country distributions
+fig = make_subplots(
+    rows=1, cols=2,
+    subplot_titles=('Top 10 Occupations', 'Top 10 Countries'),
+    specs=[[{'type':'bar'}, {'type':'bar'}]]
+)
+
+# 1. Top 10 Occupations
+occupation_freq = df['Occupation'].value_counts().head(10)
+fig.add_trace(
+    go.Bar(y=occupation_freq.index, x=occupation_freq.values,
+           orientation='h',
+           marker_color='#3498db', 
+           text=occupation_freq.values,
+           textposition='outside'),
+    row=1, col=1
+)
+
+# 2. Top 10 Countries
+country_freq = df['Country'].value_counts().head(10)
+fig.add_trace(
+    go.Bar(y=country_freq.index, x=country_freq.values,
+           orientation='h',
+           marker_color='#2ecc71', 
+           text=country_freq.values,
+           textposition='outside'),
+    row=1, col=2
+)
+
+fig.update_layout(
+    title_text='Geographic and Occupational Distribution - Top 10',
+    showlegend=False,
+    height=500,
+    plot_bgcolor='white'
+)
+
+fig.update_xaxes(title_text='Frequency', showgrid=True, gridcolor='lightgray')
+fig.update_yaxes(showgrid=False)
+
+fig.show()
+plt.show()
+import pandas as pd
+import matplotlib.pyplot as plt
+import os
+
+# --- Load dataset safely (modify folder name if needed) ---
+folder = "/kaggle/input/mental-health1"
+files = os.listdir(folder)
+csv_file = [f for f in files if f.lower().endswith(".csv")][0]
+
+df = pd.read_csv(f"{folder}/{csv_file}")
+
+# --- Frequency Polygon for Mood Swings ---
+mood_counts = df['Mood_Swings'].value_counts().sort_index()
+
+plt.figure(figsize=(10, 5))
+
+# Plot as a line (frequency polygon)
+plt.plot(mood_counts.index, mood_counts.values, marker='o', linewidth=2)
+
+# Titles and labels
+plt.title("Frequency Polygon of Mood Swings")
+plt.xlabel("Mood Swing Category")
+plt.ylabel("Frequency")
+plt.grid(True)
+
+plt.show()
+
+import pandas as pd
+import plotly.graph_objects as go
+
+# Load data
+folder = "/kaggle/input/mental-health1"
+files = os.listdir(folder)
+
+# Select the column correctly
+data = df['Days_Indoors'].dropna()
+
+# Sort values
+sorted_data = data.sort_values()
+
+# Create cumulative frequency
+cum_freq = sorted_data.value_counts().sort_index().cumsum()
+
+# Prepare x and y for line chart
+x_values = cum_freq.index
+y_values = cum_freq.values
+
+# Plot Ogive
+plt = go.Figure()
+
+plt.add_trace(go.Scatter(
+    x=x_values,
+    y=y_values,
+    mode='lines+markers'
+))
+
+plt.update_layout(
+    title="Ogive Curve for Days Indoors",
+    xaxis_title="Days Indoors",
+    yaxis_title="Cumulative Frequency",
+    plot_bgcolor="white",
+    height=500
+)
+
+
+plt.show()
+import pandas as pd
+import plotly.graph_objects as go
+
+# Load dataset
+df = pd.read_csv("/kaggle/input/mental-health1/Mental Health Dataset.csv")
+
+# Use the exact column name
+col = 'Days_Indoors'
+
+# Frequency distribution
+days_counts = df[col].value_counts().sort_index()
+
+# Bar Chart (Categorical Histogram)
+plt = go.Figure()
+
+plt.add_trace(go.Bar(
+    x=days_counts.index.astype(str),
+    y=days_counts.values,
+    text=days_counts.values,
+    textposition="outside"
+))
+
+plt.update_layout(
+    title="Histogram of Days Indoors (Categorical Frequency)",
+    xaxis_title="Days Indoors Category",
+    yaxis_title="Frequency",
+    plot_bgcolor="white",
+    height=500
+)
+
+
+plt.show()
+import pandas as pd
+import plotly.graph_objects as go
+
+# Load dataset
+df = pd.read_csv("/kaggle/input/mental-health1/Mental Health Dataset.csv")
+
+# Extract Mood Swings column
+mood_counts = df['Mood_Swings'].value_counts()
+
+# Bar Chart (Categorical Histogram)
+fig = go.Figure()
+
+fig.add_trace(go.Bar(
+    x=mood_counts.index,
+    y=mood_counts.values,
+    text=mood_counts.values,
+    textposition="outside"
+))
+
+fig.update_layout(
+    title="Histogram of Mood Swings (Frequency Distribution)",
+    xaxis_title="Mood Swing Level",
+    yaxis_title="Frequency",
+    plot_bgcolor="white",
+    height=500
+)
+
+
+plt.show()
+import pandas as pd
+from sklearn.linear_model import LinearRegression
+import numpy as np
+import plotly.graph_objects as go
+
+# Load data
+df = pd.read_csv("/kaggle/input/mental-health1/Mental Health Dataset.csv")
+
+# Mapping Days_Indoors → numeric midpoint values
+days_map = {
+    'Go out Every day': 0,
+    '1-14 days': 7.5,
+    '15-30 days': 22.5,
+    '31-60 days': 45,
+    'More than 2 months': 75
+}
+
+# Mapping Mood_Swings → numeric
+mood_map = {
+    'Low': 1,
+    'Medium': 2,
+    'High': 3
+}
+
+# Apply mappings
+df['Days_num'] = df['Days_Indoors'].map(days_map)
+df['Mood_num'] = df['Mood_Swings'].map(mood_map)
+
+# Drop missing values
+df_clean = df.dropna(subset=['Days_num', 'Mood_num'])
+
+# Prepare regression variables
+X = df_clean[['Days_num']]
+y = df_clean['Mood_num']
+
+# Fit the regression model
+model = LinearRegression()
+model.fit(X, y)
+
+slope = model.coef_[0]
+intercept = model.intercept_
+
+print("Slope:", slope)
+print("Intercept:", intercept)
+
+# Regression line for plotting
+x_range = np.linspace(X.min(), X.max(), 100)
+y_pred = model.predict(x_range)
+
+# Plot (Plotly)
+fig = go.Figure()
+fig.add_trace(go.Scatter(x=df_clean['Days_num'], y=df_clean['Mood_num'],
+                         mode="markers", name="Data Points"))
+fig.add_trace(go.Scatter(x=x_range.flatten(), y=y_pred,
+                         mode="lines", name="Regression Line"))
+
+fig.update_layout(
+    title="Regression Model: Mood Swings vs Days Indoors",
+    xaxis_title="Days Indoors (Numeric Midpoint)",
+    yaxis_title="Mood Swings (Numeric Level)",
+    plot_bgcolor="white",
+    height=500
+)
+
+plt.show()
+Slope: 0.00024402155255212
+Intercept: 1.9641891498742237
+/usr/local/lib/python3.11/dist-packages/sklearn/base.py:439: UserWarning:
+
+X does not have valid feature names, but LinearRegression was fitted with feature names
+
+ import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+# Load data
+df = pd.read_csv("/kaggle/input/mental-health2/Mental Health Dataset.csv")
+
+# Mapping Days_Indoors → numeric midpoint values
+days_map = {
+    'Go out Every day': 0,
+    '1-14 days': 7.5,
+    '15-30 days': 22.5,
+    '31-60 days': 45,
+    'More than 2 months': 75
+}
+
+# Mapping Mood_Swings → numeric scores
+mood_map = {
+    'Low': 1,
+    'Medium': 2,
+    'High': 3
+}
+
+# Apply mapping
+df['Days_num'] = df['Days_Indoors'].map(days_map)
+df['Mood_num'] = df['Mood_Swings'].map(mood_map)
+
+# Keep only numeric columns for correlation
+numeric_df = df[['Days_num', 'Mood_num']]
+
+# Compute correlation matrix
+corr_matrix = numeric_df.corr()
+
+# Plot heatmap
+plt.figure(figsize=(6, 4))
+sns.heatmap(corr_matrix, annot=True, cmap="coolwarm", linewidths=.5)
+
+plt.title("Correlation Heatmap: Mood Swings vs Days Indoors")
+plt.show()
+
+import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
+from sklearn.preprocessing import LabelEncoder
+
+# -----------------------------
+# LOAD DATA
+# -----------------------------
+df = pd.read_csv("/kaggle/input/mental-health2/Mental Health Dataset.csv")
+
+# -----------------------------
+# CLEAN COLUMN NAMES (optional)
+# -----------------------------
+df.columns = df.columns.str.strip()
+
+# -----------------------------
+# CONVERT ALL CATEGORICAL DATA
+# -----------------------------
+df_encoded = df.copy()
+
+# Label encoding for ALL non-numeric columns
+le = LabelEncoder()
+
+for col in df_encoded.columns:
+    if df_encoded[col].dtype == 'object':  # If column is categorical
+        df_encoded[col] = le.fit_transform(df_encoded[col].astype(str))
+
+# -----------------------------
+# CORRELATION MATRIX
+# -----------------------------
+corr_matrix = df_encoded.corr()
+
+# -----------------------------
+# PLOT THE HEATMAP
+# -----------------------------
+plt.figure(figsize=(16, 12))
+sns.heatmap(
+    corr_matrix,
+    annot=False,      # set True if you want numbers inside boxes
+    cmap="coolwarm",
+    linewidths=0.5
+)
+
+plt.title("Correlation Heatmap of All Columns", fontsize=16)
+plt.show()
+
+ 
